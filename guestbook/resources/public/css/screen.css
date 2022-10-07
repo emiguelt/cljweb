@@ -1,6 +1,6 @@
 html,
 body {
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 @font-face {
   font-family: 'Material Icons';
@@ -8,10 +8,10 @@ body {
   font-weight: 400;
   src: url(/assets/material-icons/iconfont/MaterialIcons-Regular.eot); /* For IE6-8 */
   src: local('Material Icons'),
-       local('MaterialIcons-Regular'),
-       url(/assets/material-icons/iconfont/MaterialIcons-Regular.woff2) format('woff2'),
-       url(/assets/material-icons/iconfont/MaterialIcons-Regular.woff) format('woff'),
-       url(/assets/material-icons/iconfont/MaterialIcons-Regular.ttf) format('truetype');
+  local('MaterialIcons-Regular'),
+  url(/assets/material-icons/iconfont/MaterialIcons-Regular.woff2) format('woff2'),
+  url(/assets/material-icons/iconfont/MaterialIcons-Regular.woff) format('woff'),
+  url(/assets/material-icons/iconfont/MaterialIcons-Regular.ttf) format('truetype');
 }
 .material-icons {
   font-family: 'Material Icons';
@@ -33,3 +33,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+ul.messages {
+  list-style: none;
+}
+ul.messages li {
+  padding: 0.5em;
+  border-bottom: 1px dotted #ccc;
+}
+ul.messages li:last-child {
+  border-bottom: none;
+}
+li time {
+  font-size: 0.75em;
+  color: rgba(0, 0, 0, 0.5);
+}
