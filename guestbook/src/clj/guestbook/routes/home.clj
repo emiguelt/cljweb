@@ -15,6 +15,9 @@
     (merge {:messages (db/get-messages)}
            (select-keys flash [:name :message :errors]))))
 
+(defn home-reagent [request]
+  (layout/render request "home-reagent.html" {}))
+
 (defn about-page [request]
   (layout/render request "about.html"))
 
@@ -40,7 +43,7 @@
   [""
    {:middleware [middleware/wrap-csrf
                  middleware/wrap-formats]}
-   ["/" {:get home-page}]
+   ["/" {:get home-reagent}]
    ["/about" {:get about-page}]
    ["/message" {:post save-mesage}]])
 
