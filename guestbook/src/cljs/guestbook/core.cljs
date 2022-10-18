@@ -14,7 +14,8 @@
                            "x-csrf-token" (.-value (.getElementById js/document "token"))}
            :params        @fields
            :handler       #(do (.log js/console (str "response:" %))
-                               (reset! errors nil))
+                               (reset! errors nil)
+                               (reset! fields nil))
            :error-handler (fn [e] (.error js/console (str "error:" e))
                             (reset! errors (-> e :response :errors)))})))
 

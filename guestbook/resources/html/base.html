@@ -25,7 +25,9 @@
               </div>
               <div id="nav-menu" class="navbar-menu">
                   <div class="navbar-start">
-                      <a href="/" class="navbar-item{% ifequal page "home.html" %} is-active{%endifequal%}">Home</a>
+                      <a href="/" class="navbar-item{% ifequal page "home_reagent.html" %} is-active{%endifequal%}">Home (Current: reagent)</a>
+                      <a href="/reagent" class="navbar-item{% ifequal page "home_reagent.html" %} is-active{%endifequal%}">Home (Reagent)</a>
+                      <a href="/basic" class="navbar-item{% ifequal page "home_initial.html" %} is-active{%endifequal%}">Home (Initial)</a>
                       <a href="/about" class="navbar-item{% ifequal page "about.html" %} is-active{%endifequal%}">About</a>
                   </div>
               </div>

@@ -8,12 +8,14 @@
     [ring.util.http-response :as response]
     [guestbook.validation :refer [validate-message]]))
 
-(defn home-page [{:keys [flash] :as request}]
-  (layout/render 
-    request 
-    "home.html" 
-    (merge {:messages (db/get-messages)}
-           (select-keys flash [:name :message :errors]))))
+(defn home-basic [{:keys [params flash] :as request}]
+  (layout/render
+    request
+    "home_initial.html"
+    (let [errors (:errors flash)
+          messages {:messages (db/get-messages)}
+          new-params (if (nil? errors) {} params)]
+      (merge messages new-params {:errors errors}))))
 
 (defn home-reagent [request]
   (layout/render request "home-reagent.html" {}))
@@ -21,7 +23,7 @@
 (defn about-page [request]
   (layout/render request "about.html"))
 
-(defn save-mesage [{:keys [params]}]
+(defn save-message [{:keys [params]}]
   (if-let [errors (validate-message params)]
     (response/bad-request {:errors errors})
     (try
@@ -29,12 +31,23 @@
       (response/ok {:status :ok})
       (catch Exception e
         (response/internal-server-error {:errors {:server-error ["failed to save message!"]}})))))
+(defn save-message-initial [request]
+  (let [errors (-> (save-message request) :body)]
+    (home-basic (merge request {:flash errors}))))
+
+(def home-page
+  "Change to the latest version"
+  home-reagent)
 
 (defn home-routes []
   [""
    {:middleware [middleware/wrap-csrf
                  middleware/wrap-formats]}
-   ["/" {:get home-reagent}]
+   ["/" {:get home-page}]
+   ["/basic" {:get home-basic}]
+   ["/reagent" {:get home-reagent}]
    ["/about" {:get about-page}]
-   ["/message" {:post save-mesage}]])
+   ["/message" {:post save-message}]
+   ["/message-initial" {:post save-message-initial}]
+   ])
 

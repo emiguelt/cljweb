@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="content">
+  <h1>Guestbook - Basic (initial) version</h1>
   <div class="column is-centered">
     <div class "column is-two-thirds">
       <div class="columns">
-        <div class="column">
+        <div class="column scrollable" >
+          <div>
           <h3>Messages</h3>
           <ul class="messages">
             {% for item in messages %}
@@ -17,11 +19,12 @@
             </li>
             {%endfor%}
           </ul>
+          </div>
         </div>
       </div>
       <div class="columns">
         <div class="column">
-          <form method="POST" action="/message">
+          <form method="POST" action="/message-initial">
             {% csrf-field %}
             <div class="field">
               <label class="label" for="name">Name</label>
