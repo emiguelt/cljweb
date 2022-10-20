@@ -1,21 +1,21 @@
 (ns guestbook.routes.home
   (:require
-    [guestbook.layout :as layout]
-    [guestbook.db.core :as db]
-    [clojure.java.io :as io]
-    [guestbook.middleware :as middleware]
-    [ring.util.response]
-    [ring.util.http-response :as response]
-    [guestbook.validation :refer [validate-message]]))
+   [guestbook.layout :as layout]
+   [guestbook.db.core :as db]
+   [clojure.java.io :as io]
+   [guestbook.middleware :as middleware]
+   [ring.util.response]
+   [ring.util.http-response :as response]
+   [guestbook.validation :refer [validate-message]]))
 
 (defn home-basic [{:keys [params flash] :as request}]
   (layout/render
-    request
-    "home_initial.html"
-    (let [errors (:errors flash)
-          messages {:messages (db/get-messages)}
-          new-params (if (nil? errors) {} params)]
-      (merge messages new-params {:errors errors}))))
+   request
+   "home_initial.html"
+   (let [errors (:errors flash)
+         messages {:messages (db/get-messages)}
+         new-params (if (nil? errors) {} params)]
+     (merge messages new-params {:errors errors}))))
 
 (defn home-reagent [request]
   (layout/render request "home-reagent.html" {}))
@@ -53,6 +53,5 @@
    ["/about" {:get about-page}]
    ["/message" {:post save-message}]
    ["/message-initial" {:post save-message-initial}]
-   ["/messages" {:get message-list}]
-   ])
+   ["/messages" {:get message-list}]])
 

@@ -43,7 +43,8 @@
   :target-path "target/%s/"
   :main ^:skip-aot guestbook.core
 
-  :plugins [[lein-cljsbuild "1.1.8"]] 
+  :plugins [[lein-cljsbuild "1.1.8"]
+            [lein-cljfmt "0.9.0"]]
 
   :cljsbuild
   {:builds

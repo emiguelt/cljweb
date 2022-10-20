@@ -1,7 +1,6 @@
 (ns guestbook.validation
   (:require
-    [struct.core :as st]))
-
+   [struct.core :as st]))
 
 (def message-schema
   [[:name st/required st/string]
