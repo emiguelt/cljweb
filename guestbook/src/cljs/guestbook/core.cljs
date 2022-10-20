@@ -2,22 +2,13 @@
   (:require [reagent.core :as r]
             [reagent.dom :as dom]
             [ajax.core :refer [GET POST]]
-            [clojure.string :as string]
-            [guestbook.validation :refer [validate-message]]))
+            [guestbook.validation :refer [validate-message]]
+            [guestbook.components :as cmp]))
 
 (defn get-messages [messages]
   (GET "/messages" {:headers {"Accept" "application/transit+json"}
                     :handler #(reset! messages (:messages %))}))
 
-(defn message-list [messages]
-  (println messages)
-  [:ul.messages
-   (for [{:keys [timestamp message name]} @messages]
-     ^{:key timestamp}
-     [:li
-      [:time (.toLocaleString timestamp)]
-      [:p message]
-      [:p " - " name]])])
 
 (defn send-message! [fields errors messages]
   (if-let [validation-errors (validate-message @fields)]
@@ -33,44 +24,5 @@
            :error-handler (fn [e] (.error js/console (str "error:" e))
                             (reset! errors (-> e :response :errors)))})))
 
-(defn errors-component [errors id]
-  (when-let [error (id @errors)]
-    [:div.notification.is-danger (string/join error)]))
-
-(defn message-form [messages]
-  (let [fields (r/atom {})
-        errors (r/atom {})]
-    (fn []
-      [:div
-       [errors-component errors :server-error]
-       [:div.field
-        [:label.label {:for :name} "Name"]
-        [errors-component errors :name]
-        [:input.input
-         {:type      :text
-          :name      :name
-          :on-change #(swap! fields assoc :name (-> % .-target .-value))
-          :value     (:name @fields)}]]
-       [:div.field
-        [:label.label {:for :message} "Message"]
-        [errors-component errors :message]
-        [:textarea.textarea
-         {:name      :message
-          :on-change #(swap! fields assoc :message (-> % .-target .-value))
-          :value     (:message @fields)}]]
-       [:input.button.is-primary
-        {:type :submit
-         :on-click #(send-message! fields errors messages)
-         :value "comment"}]])))
-
-(defn home []
-  (let [messages (r/atom nil)]
-    (get-messages messages)
-    [:div.content>div.columns.is-centered>div.columns.is-two-thirds
-     [:div.columns>div.column
-      [:h3 "Messages"]
-      [message-list messages]]
-     [:div.columns>div.column
-      [message-form messages]]]))
-
-(dom/render [home] (.getElementById js/document "content"))
+(dom/render [cmp/home send-message! get-messages #(r/atom nil)]
+            (.getElementById js/document "content"))
