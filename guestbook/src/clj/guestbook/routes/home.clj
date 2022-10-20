@@ -31,9 +31,13 @@
       (response/ok {:status :ok})
       (catch Exception e
         (response/internal-server-error {:errors {:server-error ["failed to save message!"]}})))))
+
 (defn save-message-initial [request]
   (let [errors (-> (save-message request) :body)]
     (home-basic (merge request {:flash errors}))))
+
+(defn message-list [_]
+  (response/ok {:messages (vec (db/get-messages))}))
 
 (def home-page
   "Change to the latest version"
@@ -49,5 +53,6 @@
    ["/about" {:get about-page}]
    ["/message" {:post save-message}]
    ["/message-initial" {:post save-message-initial}]
+   ["/messages" {:get message-list}]
    ])
 

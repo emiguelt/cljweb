@@ -4,7 +4,8 @@
     [next.jdbc.result-set]
     [conman.core :as conman]
     [mount.core :refer [defstate]]
-    [guestbook.config :refer [env]]))
+    [guestbook.config :refer [env]]
+    [java-time :refer [java-date]]))
 
 (defstate ^:dynamic *db*
           :start (conman/connect! {:jdbc-url (env :database-url)})
@@ -12,12 +13,18 @@
 
 (conman/bind-connection *db* "sql/queries.sql")
 
+(defn sql-timestamp->inst [t]
+  (-> t
+      (.toLocalDateTime)
+      (.atZone (java.time.ZoneId/systemDefault))
+      (java-date)))
+
 (extend-protocol next.jdbc.result-set/ReadableColumn
   java.sql.Timestamp
   (read-column-by-label [^java.sql.Timestamp v _]
-    (.toLocalDateTime v))
+    (sql-timestamp->inst v))
   (read-column-by-index [^java.sql.Timestamp v _2 _3]
-    (.toLocalDateTime v))
+    (sql-timestamp->inst v))
   java.sql.Date
   (read-column-by-label [^java.sql.Date v _]
     (.toLocalDate v))
