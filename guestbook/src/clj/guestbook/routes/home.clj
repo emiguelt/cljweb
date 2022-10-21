@@ -20,6 +20,9 @@
 (defn home-reagent [request]
   (layout/render request "home-reagent.html" {}))
 
+(defn home-re-frame-v1 [request]
+  (layout/render request "home-reframe-v1.html" {}))
+
 (defn about-page [request]
   (layout/render request "about.html"))
 
@@ -41,7 +44,7 @@
 
 (def home-page
   "Change to the latest version"
-  home-reagent)
+  home-re-frame-v1)
 
 (defn home-routes []
   [""
@@ -50,6 +53,7 @@
    ["/" {:get home-page}]
    ["/basic" {:get home-basic}]
    ["/reagent" {:get home-reagent}]
+   ["/reframe-v1" {:get home-re-frame-v1}]
    ["/about" {:get about-page}]
    ["/message" {:post save-message}]
    ["/message-initial" {:post save-message-initial}]

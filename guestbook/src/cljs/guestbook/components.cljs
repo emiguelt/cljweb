@@ -29,7 +29,7 @@
           :value     (:message @fields)}]]
        [:input.button.is-primary
         {:type :submit
-         :on-click #(send-msg fields errors messages)
+         :on-click #(send-msg fields errors)
          :value "comment"}]])))
 
 (defn message-list [messages]
@@ -42,12 +42,14 @@
       [:p message]
       [:p " - " name]])])
 
-(defn home [send-msg get-msgs message-listener]
-  (let [messages (message-listener)]
-    (get-msgs messages)
-    [:div.content>div.columns.is-centered>div.columns.is-two-thirds
-     [:div.columns>div.column
-      [:h2 "Messages"]
-      [message-list messages]]
-     [:div.columns>div.column
-      [message-form send-msg messages]]]))
+(defn home [send-msg get-msgs messages loading?]
+  (get-msgs)
+  [:div.content>div.columns.is-centered>div.columns.is-two-thirds
+   (if (loading?)
+     [:h3 "Loading messages..."]
+     [:div
+      [:div.columns>div.column
+       [:h2 "Messages"]
+       [message-list messages]]
+      [:div.columns>div.column
+       [message-form send-msg messages]]])])
