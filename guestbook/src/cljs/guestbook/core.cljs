@@ -23,14 +23,14 @@
   (rf/reg-sub :messages/list (fn [db _] (:messages/list db []))))
 
 (defn get-messages [msg-setter]
-  (GET "/messages" {:headers {"Accept" "application/transit+json"}
+  (GET "/api/messages" {:headers {"Accept" "application/transit+json"}
                     :handler msg-setter}))
 
 
 (defn send-message! [msg-setter fields errors]
   (if-let [validation-errors (validate-message @fields)]
     (reset! errors validation-errors)
-    (POST "/message"
+    (POST "/api/messages"
           {:format        :json
            :headers       {"Accept"       "application/transit+json"
                            "x-csrf-token" (elem-val (elem-by-id "token"))}
