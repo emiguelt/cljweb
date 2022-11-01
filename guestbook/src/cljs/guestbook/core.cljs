@@ -10,6 +10,8 @@
 
 (defn elem-val [elem] (.-value elem))
 
+(defn log [s] (.log js/console s))
+
 ;; Register event handlers
 (do
   (rf/reg-event-fx :app/initialize (fn [_ _] {:db {:messages/loading? true}}))
@@ -42,7 +44,7 @@
                             (reset! errors (-> e :response :errors)))})))
 
 (defn reagent-params []
-  (let [messages (r/atom nil)] {:init #(.log js/console "Reagent initialized")
+  (let [messages (r/atom nil)] {:init #(log "Reagent initialized")
                                 :send-msg   #(swap! messages conj (assoc % :timestamp (js/Date.)))
                                 :msg-setter #(reset! messages (:messages %))
                                 :msgs       messages
@@ -50,7 +52,7 @@
 
 (defn re-frame-v1-params []
   (let [messages (rf/subscribe [:messages/list])] {:init       #(do (rf/dispatch [:app/initialize])
-                                                                    (.log js/console "Reframe v1 initialized"))
+                                                                    (log "Reframe v1 initialized"))
                                                    :send-msg   #(rf/dispatch [:messages/add (assoc % :timestamp (js/Date.))])
                                                    :msg-setter #(rf/dispatch [:messages/set (:messages %)])
                                                    :msgs       messages
@@ -59,9 +61,22 @@
 (def app-versions {:reagent    (reagent-params)
                    :re-frame-v1 (re-frame-v1-params)})
 
-(let [appver (or (-> "app-version" elem-by-id elem-val keyword) :reagent)
-      {:keys [init send-msg msg-setter msgs loading?]} (appver app-versions)]
-  (.log js/console (str "App version: " appver) )
-  (init)
-  (dom/render [cmp/home (partial send-message! send-msg) #(get-messages msg-setter) msgs loading?]
-              (elem-by-id "content")))
+(def app-version (or (-> "app-version" elem-by-id elem-val keyword) :reagent))
+
+(defn exec-params [] (app-version app-versions))
+
+(defn ^:dev/after-load mount-components []
+  (let [{:keys [send-msg msg-setter msgs loading?]} (exec-params)]
+    (rf/clear-subscription-cache!)
+    (log "Mounting components...")
+    (dom/render [cmp/home (partial send-message! send-msg) #(get-messages msg-setter) msgs loading?]
+                (elem-by-id "content"))
+    (log "Components mounted")))
+
+
+(defn init! []
+  (let [{:keys [init msg-setter]} (exec-params)]
+    (log (str "Initializing app - " app-version))
+    (init)
+    (get-messages msg-setter)
+    (mount-components)))

@@ -42,14 +42,15 @@
       [:p message]
       [:p " - " name]])])
 
-(defn home [send-msg get-msgs messages loading?]
+(defn home [send-msg get-msgs msg-store loading?]
   (get-msgs)
-  [:div.content>div.columns.is-centered>div.columns.is-two-thirds
-   (if (loading?)
-     [:h3 "Loading messages..."]
-     [:div
-      [:div.columns>div.column
-       [:h2 "Messages"]
-       [message-list messages]]
-      [:div.columns>div.column
-       [message-form send-msg messages]]])])
+  (fn []
+    [:div.content>div.columns.is-centered>div.columns.is-two-thirds
+     (if (loading?)
+       [:h3 "Loading messages..."]
+       [:div
+        [:div.columns>div.column
+         [:h2 "Messages"]
+         [message-list msg-store]]
+        [:div.columns>div.column
+         [message-form send-msg msg-store]]])]))
