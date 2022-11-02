@@ -17,7 +17,7 @@
                  [luminus/ring-ttl-session "0.3.3"]
                  [markdown-clj "1.10.5"]
                  [metosin/muuntaja "0.6.7"]
-                 [metosin/reitit "0.5.10"]
+                 [metosin/reitit "0.5.18"]
                  [metosin/ring-http-response "0.9.1"]
                  [mount "0.1.16"]
                  [nrepl "0.8.3"]
@@ -37,7 +37,9 @@
                  [re-frame "1.1.2"]
                  [com.google.javascript/closure-compiler-unshaded "v20220803" :scope "provided"]
                  [org.clojure/google-closure-library "0.0-20191016-6ae1f72f" :scope "provided"]
-                 [thheller/shadow-cljs "2.20.7" :scope "provided"]]
+                 [thheller/shadow-cljs "2.20.7" :scope "provided"]
+                 [com.fasterxml.jackson.core/jackson-core "2.13.4"]
+                 ]
 
   ;;:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5010"]
 
@@ -84,7 +86,8 @@
                                  [prone "2020-01-17"]
                                  [ring/ring-devel "1.8.2"]
                                  [ring/ring-mock "0.4.0"]
-                                 [binaryage/devtools "1.0.2"]]
+                                 [binaryage/devtools "1.0.2"]
+                                 [day8.re-frame/re-frame-10x "1.5.0"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.24.1"]
                                  [jonase/eastwood "0.3.5"]] 
                   
