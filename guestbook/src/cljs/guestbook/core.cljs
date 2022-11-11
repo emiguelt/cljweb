@@ -4,6 +4,7 @@
             [reagent.dom :as dom]
             [ajax.core :refer [GET POST]]
             [guestbook.validation :refer [validate-message]]
+            [guestbook.websocket :as ws]
             [guestbook.components :as cmp]))
 
 (defn elem-by-id [id] (.getElementById js/document id))
@@ -17,7 +18,9 @@
   (rf/reg-event-fx :app/initialize (fn [_ _] {:db {:messages/loading? true}}))
   (rf/reg-event-db :messages/set (fn [db [_ messages]] (-> db (assoc :messages/loading? false
                                                                      :messages/list messages))))
-  (rf/reg-event-db :messages/add (fn [db [_ message]] (update db :messages/list conj message))))
+  (rf/reg-event-db :messages/add (fn [db [_ message]] (do
+                                                       (log (str "Message to add " message))
+                                                       (update db :messages/list conj message)))))
 
 ;; Register subscriptions
 (do
@@ -26,22 +29,17 @@
 
 (defn get-messages [msg-setter]
   (GET "/api/messages" {:headers {"Accept" "application/transit+json"}
-                    :handler msg-setter}))
+                        :handler msg-setter}))
 
-
-(defn send-message! [msg-setter fields errors]
+(defn send-message! [fields errors]
+  (log (str "send message " fields))
   (if-let [validation-errors (validate-message @fields)]
     (reset! errors validation-errors)
-    (POST "/api/messages"
-          {:format        :json
-           :headers       {"Accept"       "application/transit+json"
-                           "x-csrf-token" (elem-val (elem-by-id "token"))}
-           :params        @fields
-           :handler       #(do (msg-setter @fields)
-                               (reset! errors nil)
-                               (reset! fields nil))
-           :error-handler (fn [e] (.error js/console (str "error:" e))
-                            (reset! errors (-> e :response :errors)))})))
+    (try 
+      (ws/send-message! @fields)
+      (reset! errors nil)                         
+      (reset! fields nil)
+      (catch ExceptionInfo e (log (str "Error: " (ex-data e)))))))
 
 (defn reagent-params []
   (let [messages (r/atom nil)] {:init #(log "Reagent initialized")
@@ -53,7 +51,7 @@
 (defn re-frame-v1-params []
   (let [messages (rf/subscribe [:messages/list])] {:init       #(do (rf/dispatch [:app/initialize])
                                                                     (log "Reframe v1 initialized"))
-                                                   :send-msg   #(rf/dispatch [:messages/add (assoc % :timestamp (js/Date.))])
+                                                   :send-msg   #(rf/dispatch [:messages/add %])
                                                    :msg-setter #(rf/dispatch [:messages/set (:messages %)])
                                                    :msgs       messages
                                                    :loading?   (fn [] @(rf/subscribe [:messages/loading?]))}))
@@ -69,14 +67,16 @@
   (let [{:keys [send-msg msg-setter msgs loading?]} (exec-params)]
     (rf/clear-subscription-cache!)
     (log "Mounting components...")
-    (dom/render [cmp/home (partial send-message! send-msg) #(get-messages msg-setter) msgs loading?]
+    (dom/render [cmp/home send-message! #(get-messages msg-setter) msgs loading?]
                 (elem-by-id "content"))
     (log "Components mounted")))
 
 
 (defn init! []
-  (let [{:keys [init msg-setter]} (exec-params)]
+  (let [{:keys [init msg-setter send-msg]} (exec-params)]
     (log (str "Initializing app - " app-version))
     (init)
     (get-messages msg-setter)
+    (ws/connect! (str "ws://" (.-host js/location) "/ws") send-msg)
     (mount-components)))
+

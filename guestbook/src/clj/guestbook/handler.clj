@@ -1,6 +1,7 @@
 (ns guestbook.handler
   (:require
    [guestbook.middleware :as middleware]
+   [guestbook.routes.websockets :refer [websocket-routes]]
    [guestbook.layout :refer [error-page]]
    [guestbook.routes.home :refer [home-routes]]
    [guestbook.routes.services :refer [service-routes]]
@@ -18,7 +19,7 @@
   :start
   (ring/ring-handler
    (ring/router
-    [(home-routes) (service-routes)])
+    [(home-routes) (service-routes) (websocket-routes)])
    (ring/routes
     (ring/create-resource-handler
      {:path "/"})
