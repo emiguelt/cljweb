@@ -39,6 +39,7 @@
                  [org.clojure/google-closure-library "0.0-20191016-6ae1f72f" :scope "provided"]
                  [thheller/shadow-cljs "2.20.7" :scope "provided"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.4"]
+                 [com.taoensso/sente "1.17.0"]
                  ]
 
   ;;:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5010"]

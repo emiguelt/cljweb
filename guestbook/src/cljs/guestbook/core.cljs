@@ -5,7 +5,8 @@
             [ajax.core :refer [GET POST]]
             [guestbook.validation :refer [validate-message]]
             [guestbook.websocket :as ws]
-            [guestbook.components :as cmp]))
+            [guestbook.components :as cmp]
+            [mount.core :as mount]))
 
 (defn elem-by-id [id] (.getElementById js/document id))
 
@@ -18,9 +19,12 @@
   (rf/reg-event-fx :app/initialize (fn [_ _] {:db {:messages/loading? true}}))
   (rf/reg-event-db :messages/set (fn [db [_ messages]] (-> db (assoc :messages/loading? false
                                                                      :messages/list messages))))
-  (rf/reg-event-db :messages/add (fn [db [_ message]] (do
+  (rf/reg-event-db :message/add (fn [db [_ message]] (do
                                                        (log (str "Message to add " message))
-                                                       (update db :messages/list conj message)))))
+                                                       (update db :messages/list conj message))))
+  (rf/reg-event-fx :message/send! (fn [{:keys [db]} [_ fields]]
+                                    (ws/send! [:message/create! fields])
+                                    {:db (dissoc db :form/server-errors)})))
 
 ;; Register subscriptions
 (do
@@ -36,7 +40,7 @@
   (if-let [validation-errors (validate-message @fields)]
     (reset! errors validation-errors)
     (try 
-      (ws/send-message! @fields)
+      (rf/dispatch [:message/send! @fields])
       (reset! errors nil)                         
       (reset! fields nil)
       (catch ExceptionInfo e (log (str "Error: " (ex-data e)))))))
@@ -49,9 +53,10 @@
                                 :loading?   (fn [] false)}))
 
 (defn re-frame-v1-params []
-  (let [messages (rf/subscribe [:messages/list])] {:init       #(do (rf/dispatch [:app/initialize])
+  (let [messages (rf/subscribe [:messages/list])] {:init       #(do (mount/start)
+                                                                  (rf/dispatch [:app/initialize])
                                                                     (log "Reframe v1 initialized"))
-                                                   :send-msg   #(rf/dispatch [:messages/add %])
+                                                   :send-msg   #(rf/dispatch [:message/add %])
                                                    :msg-setter #(rf/dispatch [:messages/set (:messages %)])
                                                    :msgs       messages
                                                    :loading?   (fn [] @(rf/subscribe [:messages/loading?]))}))
@@ -64,7 +69,7 @@
 (defn exec-params [] (app-version app-versions))
 
 (defn ^:dev/after-load mount-components []
-  (let [{:keys [send-msg msg-setter msgs loading?]} (exec-params)]
+  (let [{:keys [msg-setter msgs loading?]} (exec-params)]
     (rf/clear-subscription-cache!)
     (log "Mounting components...")
     (dom/render [cmp/home send-message! #(get-messages msg-setter) msgs loading?]
@@ -73,10 +78,9 @@
 
 
 (defn init! []
-  (let [{:keys [init msg-setter send-msg]} (exec-params)]
+  (let [{:keys [init msg-setter]} (exec-params)]
     (log (str "Initializing app - " app-version))
     (init)
     (get-messages msg-setter)
-    (ws/connect! (str "ws://" (.-host js/location) "/ws") send-msg)
     (mount-components)))
 
